@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"  creationComplete="init()">
+	<mx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			
+			
+			private const VGT_ADDRESS:String = "http://www.wave255.com/VGT/VGTGraph.html"
+			private const SERVER_ADDRESS:String = "rtmfp://stratus.adobe.com/";
+			private const DEVELOPER_KEY:String = "7a00ffac96b9169c6b53524f-d3aea86aca8c";
+		
+			private var nc:NetConnection;
+			private var myPeerID:String;
+			private var farPeerID:String;
+			// streams
+			private var sendStream:NetStream;
+			private var recvStream:NetStream;
+			private var graphMsg:String;
+		
+			private function initConnection():void{				
+				nc = new NetConnection();
+				nc.addEventListener(NetStatusEvent.NET_STATUS,ncStatus);
+				nc.connect(SERVER_ADDRESS+DEVELOPER_KEY);			
+			}
+			
+			private function ncStatus(event:NetStatusEvent):void{
+				trace(event.info.code);
+				
+				myPeerID = nc.nearID;
+				
+				if(event.info.code == "NetConnection.Connect.Success")
+					initSendStream();
+				else if(event.info.code == "NetStream.Connect.Success")
+					initRecvStream();
+				
+			}
+			
+			private function initSendStream():void{
+								
+				sendStream = new NetStream(nc,NetStream.DIRECT_CONNECTIONS);
+				sendStream.addEventListener(NetStatusEvent.NET_STATUS, netStatusHandler);
+				sendStream.publish("media");
+				
+				var sendStreamClient:Object = new Object();
+				sendStreamClient.onPeerConnect = function(callerns:NetStream):Boolean{
+					
+					farPeerID = callerns.farID;
+					
+					trace("onPeerConnect "+farPeerID);
+					
+					return true;
+				}
+				
+				sendStream.client = sendStreamClient;
+				
+			}
+			
+			private function initRecvStream():void{
+				if(farPeerID)
+				{
+					recvStream = new NetStream(nc,farPeerID);
+					recvStream.addEventListener(NetStatusEvent.NET_STATUS,netStatusHandler);
+					recvStream.play("media");					
+					recvStream.client = this;
+					//Alert.show("Connection to visual game tuner established.","VGT Status");
+					ExternalInterface.call("alert","Connection to visual game tuner established.");
+				}else trace("far peer id is null");
+			}
+			
+			public function receiveSomeData(str:String):void{
+				ExternalInterface.call("UpdateGame",str);
+			}
+			
+			private function sendSomeData():void{
+				sendStream.send("receiveSomeData",graphMsg);
+			}
+			
+			private function netStatusHandler(event:NetStatusEvent):void{
+				trace(event.info.code);
+				
+			}
+			
+			private function init():void{
+
+				ExternalInterface.addCallback("updateGraph", updateGraph);
+				ExternalInterface.addCallback("alertVGTURL", alertVGTURL);
+				initConnection();
+				//Alert.show("Please copy this link into a browser on the workstation you wish to game tune on: \n\n"+
+				//	VGT_ADDRESS+"?farID="+myPeerID,"Visual Game Tuner URL");
+				//ExternalInterface.call("Please copy this link into a browser on the workstation you wish to game tune on: \n\n"+
+				//	VGT_ADDRESS+"?farID="+myPeerID);
+				
+			}
+			
+			private function openURL():void{
+				var url:URLRequest = new URLRequest("something should go in here"); navigateToURL(url, "_blank"); 
+			}
+			
+			public  function updateGraph(ldr:String):void
+			{
+				graphMsg = ldr;		
+				if(sendStream)
+					sendStream.send("receiveSomeData",graphMsg);
+			}
+			
+			public function alertVGTURL():void
+			{
+				ExternalInterface.call("alert","Please copy this link into a browser on the workstation you wish to game tune on: \n\n"+
+					VGT_ADDRESS+"?farID="+myPeerID);
+			}
+		]]>
+	</mx:Script>
+	
+</mx:Application>

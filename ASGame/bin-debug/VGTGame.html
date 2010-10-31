@@ -1,0 +1,97 @@
+<!-- saved from url=(0014)about:internet -->
+<html lang="en">
+<script src="swfobject.js" type="text/javascript"></script>
+		<script src="unityobject.js" type="text/javascript"></script>
+		
+		<script language="javascript" type="text/javascript"><!--
+			//initializations
+			var flashMovieName = "VGTGame"
+			var flex = new SWFObject('VGTGame.swf', 'VGTGame', '100%', '100%', '10.0', '#869ca7');
+			var uniObj = new UnityObject("CarTutorial.unity3d", "Unity3D", "800", "600");
+			uniObj.setAttribute("altHTML", "<a href='http://unity3d.com/unitywebplayer.html' title='Go to unity3d.com to install the Unity Web Player'>Install the Unity Web Player</a>");
+						
+			function unityDragTo( x, y ){
+				vectorArray = new Array( x, 0 , y);
+				//log( "Call Unity->Cube->dragTo( " + vectorArray + " );" );
+				uniObj.msg( "Cube", "dragTo", vectorArray );
+			}
+
+			function log( msg ){
+				var currentTime = new Date();
+				var hours = currentTime.getHours();
+				var minutes = currentTime.getMinutes();
+				var seconds = currentTime.getSeconds();
+				var now = hours + ":" + minutes + ":" + seconds;
+				document.getElementById("log").innerHTML = "[ "+ now +" ] " + msg + "<br />" + document.getElementById("log").innerHTML;
+				
+			}
+			
+			function getFlashMovie(movieName) {
+				var isIE = navigator.appName.indexOf("Microsoft") != -1;
+				return (isIE) ? window[movieName] : document[movieName];
+			}
+			
+			function UpdateGraph( graphMsg ){
+				getFlashMovie(flashMovieName).updateGraph(graphMsg);
+			}
+			var updating = false;
+			function UpdateGame( gm ){
+				//alert(gm);
+				//uniObj.msg("Unity3D_object","UpdateGame",gm);
+				document.getElementById("Unity3D_embed").SendMessage("VGTObject","UpdateGame",gm);
+			}
+			
+			function AlertVGTURL(){
+				getFlashMovie(flashMovieName).alertVGTURL();
+			}
+		
+		--></script>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!--  BEGIN Browser History required section -->
+<link rel="stylesheet" type="text/css" href="history/history.css" />
+<!--  END Browser History required section -->
+
+<title></title>
+<script src="AC_OETags.js" language="javascript"></script>
+ 
+<!--  BEGIN Browser History required section -->
+<script src="history/history.js" language="javascript"></script>
+<!--  END Browser History required section -->
+
+<style>
+body { margin: 0px; overflow:hidden }
+</style>
+<script language="JavaScript" type="text/javascript">
+</script>
+</head>
+
+<body bgcolor=#FFFFFF >
+<center>
+
+		<div style="float:top;">
+			<div id="header">Visual Game Tuning Example</a>
+		</div>
+		
+		<div style="float:center;">
+			<div id="flashContent" style="width:0; height:0;"></div>
+			<script>				
+				flex.write("flashContent");
+			</script>
+		</div>
+
+		<div style="float:center;">
+			<div id="unity" style="width:800px; height:600px;">
+				<script type="text/javascript">
+					uniObj.write();
+				</script>
+			</div>
+		</div>
+		
+		
+
+</center>
+</body>
+</html>
