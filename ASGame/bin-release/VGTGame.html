@@ -7,7 +7,7 @@
 			//initializations
 			var flashMovieName = "VGTGame"
 			var flex = new SWFObject('VGTGame.swf', 'VGTGame', '100%', '100%', '10.0', '#869ca7');
-			var uniObj = new UnityObject("CarTutorial.unity3d", "Unity3D", "800", "600");
+			var uniObj = new UnityObject("CarTutorial.unity3d", "Unity3D", "480", "320");
 			uniObj.setAttribute("altHTML", "<a href='http://unity3d.com/unitywebplayer.html' title='Go to unity3d.com to install the Unity Web Player'>Install the Unity Web Player</a>");
 						
 			function unityDragTo( x, y ){
@@ -44,6 +44,14 @@
 			function AlertVGTURL(){
 				getFlashMovie(flashMovieName).alertVGTURL();
 			}
+			
+			function ShowGraphLink(linkInfo){ 
+				document.getElementById("linkInfoArea").innerHTML =  linkInfo;
+			}
+			
+			function ShowConnectionStatus(status){
+					document.getElementById("statusInfoArea").innerHTML =  status;
+			}
 		
 		--></script>
 
@@ -76,17 +84,32 @@ body { margin: 0px; overflow:hidden }
 		</div>
 		
 		<div style="float:center;">
-			<div id="flashContent" style="width:0; height:0;"></div>
+			<div id="flashContent" style="width:0px; height:0px;"></div>
 			<script>				
 				flex.write("flashContent");
 			</script>
 		</div>
 
 		<div style="float:center;">
-			<div id="unity" style="width:800px; height:600px;">
-				<script type="text/javascript">
-					uniObj.write();
-				</script>
+			<table>
+				<tr>
+				<td>
+					<div id="unity" >
+						<script type="text/javascript">
+							uniObj.write();
+						</script>
+				</td>
+				</tr>
+				<tr>
+				<td>
+					<span id="linkInfoArea"></span>
+				</td>
+				</tr>
+				<tr>
+				<td>
+					<span id="statusInfoArea"></span>
+				</td>
+				</tr>
 			</div>
 		</div>
 		

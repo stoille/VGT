@@ -63,7 +63,7 @@
 					recvStream.play("media");					
 					recvStream.client = this;
 					//Alert.show("Connection to visual game tuner established.","VGT Status");
-					ExternalInterface.call("alert","Connection to visual game tuner established.");
+					ExternalInterface.call('ShowConnectionStatus','<font color="red"><b>Connection to visual game tuner established.</b></font>');
 				}else trace("far peer id is null");
 			}
 			
@@ -105,8 +105,8 @@
 			
 			public function alertVGTURL():void
 			{
-				ExternalInterface.call("alert","Please copy this link into a browser on the workstation you wish to game tune on: \n\n"+
-					VGT_ADDRESS+"?farID="+myPeerID);
+				ExternalInterface.call('ShowGraphLink','Please visit this link from the tuning station: <a href="'+
+					VGT_ADDRESS+'?farID='+myPeerID+'">VGT Graph Link</a>');
 			}
 		]]>
 	</mx:Script>

@@ -77,12 +77,12 @@ package
 			}else trace("far peer id is null");
 		}
 		
-		public function UpdateGraph(graphMsg:String):void{
+		public function receiveSomeData(graphMsg:String):void{
 			//Alert.show("Got the msg!","//Alert");
-			ExternalInterface.call("UpdateGraph("+graphMsg+")");
+			ExternalInterface.call("UpdateGraph",graphMsg);
 		}			
 		
-		private function UpdateGame(gameMsg:String):void{
+		private function sendSomeData(gameMsg:String):void{
 			//	sendStream.send("UpdateGraph",gameMsg);
 		}
 		
@@ -93,8 +93,8 @@ package
 		
 		private function init():void{
 			
-			this.farPeerID = "57f0619bc00018b148c53084320f64d6675ba1b16c55d3ebbe7d27be802989fd";//
-			//this.farPeerID = getHtmlParameters("farID");
+			//this.farPeerID = "f35739bc9316e42cfa4c71a55939181d8aa121480f24255aacce42fb1eda6880";//
+			this.farPeerID = getHtmlParameters("farID");
 			////Alert.show(this.farPeerID);
 			initConnection();
 			

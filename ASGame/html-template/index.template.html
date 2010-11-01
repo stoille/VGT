@@ -44,6 +44,14 @@
 			function AlertVGTURL(){
 				getFlashMovie(flashMovieName).alertVGTURL();
 			}
+			
+			function ShowGraphLink(linkInfo){ 
+				document.getElementById("linkInfoArea").innerHTML =  linkInfo;
+			}
+			
+			function ShowConnectionStatus(status){
+					document.getElementById("statusInfoArea").innerHTML =  status;
+			}
 		
 		--></script>
 
@@ -76,17 +84,32 @@ body { margin: 0px; overflow:hidden }
 		</div>
 		
 		<div style="float:center;">
-			<div id="flashContent" style="width:0; height:0;"></div>
+			<div id="flashContent" style="width:0px; height:0px;"></div>
 			<script>				
 				flex.write("flashContent");
 			</script>
 		</div>
 
 		<div style="float:center;">
-			<div id="unity" >
-				<script type="text/javascript">
-					uniObj.write();
-				</script>
+			<table>
+				<tr>
+				<td>
+					<div id="unity" >
+						<script type="text/javascript">
+							uniObj.write();
+						</script>
+				</td>
+				</tr>
+				<tr>
+				<td>
+					<span id="linkInfoArea"></span>
+				</td>
+				</tr>
+				<tr>
+				<td>
+					<span id="statusInfoArea"></span>
+				</td>
+				</tr>
 			</div>
 		</div>
 		
