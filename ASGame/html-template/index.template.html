@@ -6,15 +6,9 @@
 		<script language="javascript" type="text/javascript"><!--
 			//initializations
 			var flashMovieName = "VGTGame"
-			var flex = new SWFObject('${swf}.swf', '${application}', '${width}', '${height}', '10.0', '${bgcolor}');
+			var flex = new SWFObject('VGTGame.swf', 'VGTGame', '100%', '100%', '10.0', '#869ca7');
 			var uniObj = new UnityObject("CarTutorial.unity3d", "Unity3D", "480", "320");
 			uniObj.setAttribute("altHTML", "<a href='http://unity3d.com/unitywebplayer.html' title='Go to unity3d.com to install the Unity Web Player'>Install the Unity Web Player</a>");
-						
-			function unityDragTo( x, y ){
-				vectorArray = new Array( x, 0 , y);
-				//log( "Call Unity->Cube->dragTo( " + vectorArray + " );" );
-				uniObj.msg( "Cube", "dragTo", vectorArray );
-			}
 
 			function log( msg ){
 				var currentTime = new Date();
@@ -32,13 +26,14 @@
 			}
 			
 			function UpdateGraph( graphMsg ){
+				alert(graphMsg);
 				getFlashMovie(flashMovieName).updateGraph(graphMsg);
 			}
 			var updating = false;
 			function UpdateGame( gm ){
-				//alert(gm);
-				//uniObj.msg("Unity3D_object","UpdateGame",gm);
-				document.getElementById("Unity3D_embed").SendMessage("VGTObject","UpdateGame",gm);
+				uniObj.msg("VGTObject","UpdateGame",gm);						
+			
+	//document.getElementById("Unity3D_embed").SendMessage("VGTObject","UpdateGame",gm);
 			}
 			
 			function AlertVGTURL(){
@@ -62,7 +57,7 @@
 <link rel="stylesheet" type="text/css" href="history/history.css" />
 <!--  END Browser History required section -->
 
-<title>${title}</title>
+<title></title>
 <script src="AC_OETags.js" language="javascript"></script>
  
 <!--  BEGIN Browser History required section -->

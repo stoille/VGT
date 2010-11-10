@@ -57,13 +57,15 @@ public class VGTUpdater : MonoBehaviour {
 					{
 						Component go = (Component)fVal;
 						Component[] comps = go.GetComponentsInChildren(fVal.GetType());
-						GetComponents(comps,finfo.Name + "$");
+						GetComponents(comps,finfo.Name + ":");
 					}
 					else {
 						//Debug.Log("Field$ "+finfo.Name+" is nested.");
 					//	GetFields(fVal,info+"$"+finfo.Name);
 					} 
 				} else {
+		//			if(GOMap.ContainsKey(parent + finfo.Name) && Convert.ToString(fVal) != _currentGO[parent + finfo.Name)
+		//				_currentGO.IsDirty = true;
 					_currentGO.Vars[parent + finfo.Name] = Convert.ToString(fVal);
 				}
         }
@@ -83,86 +85,43 @@ public class VGTUpdater : MonoBehaviour {
 					//Debug.Log("GameObject$ "+go.name);
 						
 					//create a new game object info for each object found in group named tag
-					_currentGO = new GOInfo(tag+":"+go.name);
-					_currentGO.Group = tag;
-					_currentGO.Name = go.name;
-					
-						
-					Component[] comps = go.GetComponentsInChildren<Component>();
-					GetComponents(comps,"");
+					if(!GOMap.ContainsKey(tag+":"+go.name))
+					{
+						_currentGO = new GOInfo(tag+":"+go.name);
+						_currentGO.Group = tag;
+						_currentGO.Name = go.name;
+						_currentGO.Vars = new Dictionary<string, string>();
+						GOMap[_currentGO.Id] = _currentGO;
+					}else _currentGO = GOMap[tag+":"+go.name];
+					//populate the current game object's variables
+					GetComponents(go.GetComponentsInChildren<Component>(),"");
 					
 					string pathVarPairs = "";
 					int countOfVarsForObj = 0;
 					foreach(KeyValuePair<string,string> Var in _currentGO.Vars)
-					{
 						if(Var.Key != "" && Var.Value != "")
 						{
 							pathVarPairs += Var.Key + "," + Var.Value + "$";
 							countOfVarsForObj++;
 						}
-					}
 					
 					//if there are variables to update then add them to the msg being sent out
 					if(countOfVarsForObj > 0)
-					{
-						
-						GOMap[_currentGO.Id] = _currentGO;
 						OutMsg+= "@"+_currentGO.Id + "|" + pathVarPairs.Remove(pathVarPairs.Length-1); //remove trailing $
-					}
-					
 				}catch(Exception e)
 				{ Debug.Log(e.ToString()); }
 			}
 		}
 	
 		Application.ExternalCall("UpdateGraph", OutMsg);
-		// Wait for two seconds
-	   // yield return new WaitForSeconds (2);
-		
 	}
 	
-	void UpdateObjects()
-	{
-		foreach(KeyValuePair<string,VGTUpdater.GOInfo> goip in GOMap)
-		{			
-			GOInfo goi = goip.Value;
-			if(goi.IsDirty)
-			{
-				//update their values in the game
-				//gameMsg = "Updating - "+goi.Name+" = "+goi.Value;
-				GameObject go = GameObject.Find(goi.Name);
-				if(go != null)
-				{
-					foreach(KeyValuePair<string,string> Var in goi.Vars)
-					{
-						string path = Var.Key;
-						string val = Var.Value;
-						Component goComp = go.GetComponent(path);
-						FieldInfo goInfo = goComp.GetType().GetField(path);
-						try{
-							//string oldVal = System.Convert.ToString(goInfo.GetValue(go));
-							//print("OLD: object name: "+objName+" comp: "+compName+" field: "+fieldName + " = "+ goInfo.GetValue(go).ToString());
-							object o = val;
-							object objVal = System.Convert.ChangeType(o,goInfo.GetValue(go).GetType());
-							//string setterName = "Set"+fieldName;
-							//go.SendMessage(setterName,objVal);
-							//Debug.Log("new value for "+objInfo[0]+" is: "+go.GetComponent(compName).GetType().GetField(fieldName).GetValue(go));
-							//string newVal = System.Convert.ToString(goInfo.GetValue(go));
-							//print("NEW: object name: "+objName+" comp: "+compName+" field: "+fieldName + " = "+ goInfo.GetValue(go).ToString());	
-							goi.IsDirty = false;
-						}catch(Exception e)
-						{ Debug.Log(e.ToString()); }
-					}
-				}
-			}
-		}
-	}
 	// Update is called once per frame
 	void Update () {
 		if(FramesPast >= FrameRefresh)
 		{
 			FramesPast = 0;
-			UpdateObjects();
+			//UpdateObjects();
 			OutMsg = System.DateTime.Now.Hour+":"+System.DateTime.Now.Minute+":"+System.DateTime.Now.Second + ":"+System.DateTime.Now.Millisecond;
 			PublishObjects();
 		}

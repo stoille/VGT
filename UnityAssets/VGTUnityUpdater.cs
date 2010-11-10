@@ -11,24 +11,33 @@ public class VGTUnityUpdater : MonoBehaviour {
 		GUI.Button(new Rect(10,10,200,25), _gameMsg); 
 	}
 	
-	//msg format: time@$GameObj1Name$ScriptName$ScriptParam=value@$GameObj2Name$etc....
+	//msg format: GameObj1Name:ScriptName:ScriptParam,value@GameObj2Name:etc....
 	void UpdateGame(string gameMsg){
-		
 		//parse the msg into an array of values to update
-		string[] objStrs = gameMsg.Split('@');
-		//realize the objects in the array based off of their name
-		for(int i=1; i<objStrs.Length;++i){
-			string obj = objStrs[i];
-			string[] objInfo = obj.Split('=');
-
-			string[] objPaths = objInfo[0].Split('|');
-			string objId = objPaths[0];
-			string objPath = objPaths[1];
-			string objVal = objPaths[2];
-			
-			VGTUpdater.GOInfo goi = VGTUpdater.GOMap[objId];
-			goi.Vars[objPath] = objVal;
-			goi.IsDirty = true;
+		_gameMsg = gameMsg;
+		string[] objInfo = gameMsg.Split(',');
+		//get the object names
+		string[] objPaths = objInfo[0].Split(':');
+		string objName = objPaths[0];
+		string objScriptName = objPaths[1];
+		string objVarName = objPaths[2];
+		//get the variable value
+		string objValStr = objInfo[1];
+		//fine the game object whos name matches and its script
+		GameObject go = GameObject.Find(objName);
+		Component goScript = go.GetComponent(objScriptName);
+	
+		FieldInfo fi = goScript.GetType().GetField(objVarName);
+		try{
+			//try to change the value for the specified variable
+			object o = objValStr;
+			object objVal = System.Convert.ChangeType(o,fi.GetValue(goScript).GetType());
+			//go.GetType().GetField(objVarName).SetValue(goScript,objVal);
+			string camelCasedVarName = objVarName.Substring(0,1).ToUpper() + 
+				objVarName.Substring(1,objVarName.Length);
+			goScript.SendMessage("Set"+objVarName,objVal);
+		}catch(Exception e){
+			Application.ExternalCall("alert","Exception: "+e.ToString());
 		}
 		
 	}
@@ -39,6 +48,7 @@ public class VGTUnityUpdater : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {	
+	void Update () {
+		//UpdateGame("Car:Car:maximumTurn,-10");//+ new System.Random().Next(20).ToString());
 	}
 }

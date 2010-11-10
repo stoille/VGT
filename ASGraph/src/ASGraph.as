@@ -1,9 +1,9 @@
 package
 {
 	import flash.display.Sprite;
-	import flash.net.*;
 	import flash.events.NetStatusEvent;
 	import flash.external.ExternalInterface;
+	import flash.net.*;
 	
 	public class ASGraph extends Sprite
 	{
@@ -83,7 +83,7 @@ package
 		}			
 		
 		private function sendSomeData(gameMsg:String):void{
-			//	sendStream.send("UpdateGraph",gameMsg);
+				sendStream.send("receiveSomeData",gameMsg);
 		}
 		
 		private function netStatusHandler(event:NetStatusEvent):void{
@@ -92,7 +92,7 @@ package
 		}
 		
 		private function init():void{
-			
+			ExternalInterface.addCallback("sendSomeData", sendSomeData);
 			//this.farPeerID = "f35739bc9316e42cfa4c71a55939181d8aa121480f24255aacce42fb1eda6880";//
 			this.farPeerID = getHtmlParameters("farID");
 			////Alert.show(this.farPeerID);
