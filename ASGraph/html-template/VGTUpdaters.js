@@ -6,6 +6,7 @@ var varData = new Array();
 var timeArray = new Array();
 var maxTime = 300;
 
+
 //the index for the focus range
 var fi = {x:200, dx:100};
 

@@ -15,13 +15,13 @@
 	</div>
 
     <script type="text/javascript+protovis">
-	
-	var start = new Date(new Date() - (1000*60*parent.maxTime));
 	var end = new Date();
+	var start = new Date(end - (1000*parent.maxTime));
+	
 	
 //	var sec = 1000;
-	var varData = parent.varData;
-	var selected = varData[parent.selectedGroup];	
+//	var varData = parent.varData;
+//	var selected = varData[parent.selectedGroup];	
 					
 	var data = 
 		pv.range(parent.varData[parent.selectedGroup].related.length)
@@ -154,5 +154,31 @@ context.add(pv.Panel)
 vis.render();
 
     </script>
+
+	<script type="text/javascript">
+
+
+		function RefreshData(){
+			end = new Date();
+			start = new Date(end - (1000*parent.maxTime));
+			
+			data = 
+				pv.range(parent.varData[parent.selectedGroup].related.length)
+							.map(function(i)
+								{
+										return pv.range(0,parent.varData[parent.varData[parent.selectedGroup].related[i]].values.length,1)
+											.map(function(x)
+												{ 
+											    	return {x: new Date(start.getTime() + 1000 * x),
+											            	y: parent.varData[parent.varData[parent.selectedGroup].related[i]].values[x] };		
+												} ); //end map
+								} );//end map
+								
+		    x = pv.Scale.linear(start, end).range(0, w*2);
+		    y = pv.Scale.linear(0, pv.max(data[0], function(d) d.y)).range(0, h2);
+			i = parent.fi;
+			vis.render();
+		}
+	</script>
 </body>
 </html>
