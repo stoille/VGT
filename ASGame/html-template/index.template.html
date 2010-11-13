@@ -44,7 +44,8 @@
 			}
 			
 			function ShowConnectionStatus(status){
-					document.getElementById("statusInfoArea").innerHTML =  status;
+					document.getElementById("statusInfoArea").innerHTML =  status +
+						'<input value="Send Comment" type=button onclick="SendComment(this.selectedNames);" /><input value="Send Bug" type=button onclick="SendBug(this.selectedNames);" />'
 			}
 		
 		--></script>

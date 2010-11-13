@@ -7,46 +7,45 @@
   <body>
     <div style="text-align:left;font-size:small;height: 35px;overflow-y:scroll;border: 1px lightgray solid;">
 	  	<script type="text/javascript">
-			var selectedName = parent.varData[parent.selectedGroup].expression;
-			document.write(selectedName);
+	
+			var selectedNames = '<input value="Save" type=button onclick="parent.SaveGroup(this.selectedNames);" /><input value="Delete" type=button onclick="parent.DeleteGroup(this.selectedNames);" />';
+			var end = new Date();
+			var start = new Date(end - (1000*parent.maxTime));
+
+			var related = new Array();
+			var ci = 0;
+			for(var sg in parent.selectedGroups){
+				for(var rg in parent.varData[sg].related){
+					related.push(parent.varData[sg].related[rg]);
+					selectedNames += '<font color="'+parent.colorArray[ci++]+'">'+parent.varData[related[related.length-1]].varName+'</font> | ';//expression;
+				}
+			}
+			document.write(selectedNames.substr(0,selectedNames.length-2));
 			var scale = true;
 		</script>
+		
      <!-- <input checked id="scale" type="checkbox" onchange="vis.render()" visible="false"><label for="scale">Scale to fit</label>-->
 	</div>
 
     <script type="text/javascript+protovis">
-	var end = new Date();
-	var start = new Date(end - (1000*parent.maxTime));
-	
-	
-//	var sec = 1000;
-//	var varData = parent.varData;
-//	var selected = varData[parent.selectedGroup];	
-					
-	var data = 
-		pv.range(parent.varData[parent.selectedGroup].related.length)
-					.map(function(i)
-						{
-								return pv.range(0,parent.varData[parent.varData[parent.selectedGroup].related[i]].values.length,1)
-									.map(function(x)
-										{ 
-									    	return {x: new Date(start.getTime() + 1000 * x),
-									            	y: parent.varData[parent.varData[parent.selectedGroup].related[i]].values[x] };		
-										} ); //end map
-						} );//end map
+				
+	var zoomData = 
+		pv.range(related.length)
+		.map(function(i) {
+			return pv.range(0,parent.varData[related[i]].values.length,1)
+				.map(function(x) { 
+				    	return {x: new Date(start.getTime() + 1000 * x),
+				            	y: parent.varData[related[i]].values[x] };		
+					} ); //end map
+		} );//end map
 
 /* Scales and sizing. */
 var w = 705,
     h1 = 120,
     h2 = 30,
-    x = pv.Scale.linear(start, end).range(0, w*2),
-    y = pv.Scale.linear(0, pv.max(data[0], function(d) d.y)).range(0, h2);
+    x = pv.Scale.linear(start, end).range(0, w),
+    y = pv.Scale.linear(0, pv.max(zoomData[0], function(d) d.y)).range(0, h2);
 
-/* Interaction state. Focus scales will have domain set on-render. 
-var i = {x:200, dx:100},
-    fx = pv.Scale.linear().range(0, w),
-    fy = pv.Scale.linear().range(0, h1);
-*/
 var i = parent.fi,
 	fx = pv.Scale.linear().range(0, w),
 	fy = pv.Scale.linear().range(0, h1);
@@ -60,9 +59,25 @@ var vis = new pv.Panel()
     .right(20)
     .top(5);
 
-	/* A panel for each data series. */
+	/* Current index line. */
+	vis.add(pv.Rule)
+	    .visible(function() parent.zoomIdxDate >= 0 )
+	    .left(function() x(parent.zoomIdxDate))
+	    .top(-4)
+	    .bottom(-10)
+	    .strokeStyle("red")
+	  .anchor("bottom").add(pv.Label)
+	    .text(function() { var dt = new Date(parent.zoomIdxDate); return dt.toLocaleTimeString();} );
+
+	/* An invisible bar to capture events (without flickering). */
+	vis.add(pv.Panel)
+	    .events("all")
+	    .event("mousemove", function() { parent.zoomIdxDate = Math.floor(x.invert(vis.mouse().x));  parent.zoomIdx = Math.floor(x(parent.zoomIdxDate)); parent.UpdateParallelPanel(); vis.render(); });
+	
+	
+	/* A panel for each zoomData series. */
 	var panel = vis.add(pv.Panel)
-	    .data(data);
+	    .data(zoomData);
 	
 /* Focus panel (zoomed in). */
 var focus = panel.add(pv.Panel)
@@ -83,7 +98,7 @@ var focus = panel.add(pv.Panel)
 /* X-axis ticks. */
 focus.add(pv.Rule)
     .data(function() fx.ticks())
-	.visible(function(d) (focus.varArray() == data[0]) ? true : false )
+	.visible(function(d) (focus.varArray() == zoomData[0]) ? true : false )
     .left(fx)
     .strokeStyle("#eee")
   .anchor("bottom").add(pv.Label)
@@ -92,7 +107,7 @@ focus.add(pv.Rule)
 /* Y-axis ticks. */
 focus.add(pv.Rule)
     .data(function() fy.ticks(7))
-	.visible(function(d) (focus.varArray() == data[0]) ? true : false )
+	.visible(function(d) (focus.varArray() == zoomData[0]) ? true : false )
     .bottom(fy)
     .strokeStyle(function(d) d ? "#aaa" : "#000")
   .anchor("left").add(pv.Label)
@@ -105,8 +120,8 @@ focus.add(pv.Panel)
     .data(function() focus.init())
     .left(function(d) fx(d.x))
     .bottom(function(d) fy(d.y))
-    .strokeStyle(function() (focus.varArray() == data[0]) ? "steelblue" : parent.colorArray[panel.index] )
-    .lineWidth(function() (focus.varArray() == data[0]) ? 3 : 1);
+    .strokeStyle(function() (focus.varArray() == zoomData[0]) ? "steelblue" : parent.colorArray[panel.index] )
+    .lineWidth(function() (focus.varArray() == zoomData[0]) ? 3 : 1);
 
 /* Context panel (zoomed out). */
 var context = vis.add(pv.Panel)
@@ -127,7 +142,7 @@ context.add(pv.Rule)
 
 /* Context area chart. */
 context.add(pv.Area)
-    .data(data[0])
+    .data(zoomData[0])
     .left(function(d) x(d.x))
     .bottom(1)
     .height(function(d) y(d.y))
@@ -150,35 +165,9 @@ context.add(pv.Panel)
     .cursor("move")
     .event("mousedown", pv.Behavior.drag())
     .event("drag", focus);
-
+	
 vis.render();
 
     </script>
-
-	<script type="text/javascript">
-
-
-		function RefreshData(){
-			end = new Date();
-			start = new Date(end - (1000*parent.maxTime));
-			
-			data = 
-				pv.range(parent.varData[parent.selectedGroup].related.length)
-							.map(function(i)
-								{
-										return pv.range(0,parent.varData[parent.varData[parent.selectedGroup].related[i]].values.length,1)
-											.map(function(x)
-												{ 
-											    	return {x: new Date(start.getTime() + 1000 * x),
-											            	y: parent.varData[parent.varData[parent.selectedGroup].related[i]].values[x] };		
-												} ); //end map
-								} );//end map
-								
-		    x = pv.Scale.linear(start, end).range(0, w*2);
-		    y = pv.Scale.linear(0, pv.max(data[0], function(d) d.y)).range(0, h2);
-			i = parent.fi;
-			vis.render();
-		}
-	</script>
 </body>
 </html>

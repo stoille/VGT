@@ -21,18 +21,23 @@ large {
   <body>
     <script type="text/javascript+protovis">
 
-var dimIds = pv.range(parent.varData[parent.selectedGroup].related.length).map(
-					function(i){
-						return parent.varData[parent.selectedGroup].related[i];
-					});
+	var dimIds = new Array();
+	for(var sg in parent.selectedGroups){
+		for(var rg in parent.varData[sg].related){
+			dimIds.push(parent.varData[sg].related[rg]);
+		}
+	}
+	
 var dims = pv.range(dimIds.length).map(function(i) { return parent.varData[dimIds[i]].varName; });
 
 var data = new Array();
 for(var i = 0; i < dimIds.length; ++i){
 	var o = new Object();
 	for(var j = 0; j < dimIds.length; ++j){
-		if(dims[j] == parent.varData[dimIds[i]].varName)
-			o[dims[i]] = parent.varData[dimIds[i]].values[parent.varData[dimIds[i]].values.length-1];
+		if(dims[j] == parent.varData[dimIds[i]].varName){
+			o[dims[i]] = parent.varData[dimIds[i]].values[parent.zoomIdx];
+			if(o[dims[i]] == null){ o[dims[i]] = 0; }
+		}
 		else { o[dims[j]] = 0; }
 	}
 	data.push(o);
@@ -70,6 +75,10 @@ var w = 200*dims.length,
 	rule.anchor("bottom").add(pv.Label)
 	    .textStyle(function() color(this.index).darker())
 	    .textMargin(14);
+	
+	rule.anchor("bottom").add(pv.Label)
+		.top(h+23)
+	    .text(function(t) "I = 1.0, CC | GC");
 
 	/* Parallel coordinates. */
 	vis.add(pv.Panel)
