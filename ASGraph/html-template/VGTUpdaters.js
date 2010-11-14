@@ -9,8 +9,15 @@ var maxTime = 300;
 //the index for the focus range
 var fi = {x:200, dx:100};
 var selectedGroups = new Object();
+var numSelectedGroups = 0;
+var selectedGroup = null;
 
-var colorArray = [ 	"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080"];
+var colorArray = [ 	"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
+"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
+"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
+"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
+"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
+"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080"];
 //zoom panel stuff
 var end = new Date();
 var start = new Date(end - (1000*maxTime));
@@ -19,6 +26,10 @@ var selectedNames = '';
 var zoomData;
 var zoomIdxDate = start;
 var zoomIdx = 0;
+
+//player comment stuff
+var playerComments = new Array();
+
 /*
 var sampleExpr = '<b><font color='+colorArray[0]+'>My:own:sample = </font></b><font color='+colorArray[1]+'>My:own:sample</font>';
 varData.push({varName:"My:own:sample", expression: sampleExpr, related:[0], index:0, values:[182904,196530,203944,192492,77393,81243,83653,80634,80015,84246,85383,83490,26730,27663,27360,27685,25642,26938,26407,27043,24198,25500,25935,26271,89108,93122,93594,91355,89745,94387,95463]});
@@ -41,6 +52,11 @@ function UpdateVarMap(msg) {
 	timeArray.push(time);
 	for (var i = 1; i < goMsgs.length; i++) {
 		var goMsg = goMsgs[i];
+		//check if this is a user comment and break if so
+		if(goMsg[0] == '!'){
+			AddPlayerComment(time,goMsg);
+			break;
+		}
 		var params = goMsg.split("|");
 		var go, varName, newVal, expression;
 		//if there are a list of variables, this msg describes a gameMsg update
@@ -56,7 +72,7 @@ function UpdateVarMap(msg) {
 					//setup this var if it doesnt exist yet
 					if (varMap[varName] == undefined) {
 						expression = '<b><font color='+colorArray[0]+'>'+varName+' = </font></b><font color='+colorArray[1]+'>'+varName+'</font>';
-						go = {varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array() };
+						go = {varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array(), varType: 'independant' };
 						varMap[varName] = go.index;
 						go.related.push(go.index);
 						varData.push( go );
@@ -77,7 +93,7 @@ function UpdateVarMap(msg) {
 				//setup this var if it doesnt exist yet
 				if (varMap[varName] == undefined) {
 					expression = '<b><font color='+colorArray[0]+'>'+varName+' = </font></b>';
-					go = {varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array() };
+					go = {varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array(), varType: 'composite' };
 					varMap[varName] = go.index;
 					varData.push( go );
 					var symbs = exprStr.split("+"); //this is limited and temporary
@@ -94,5 +110,13 @@ function UpdateVarMap(msg) {
 				go.values.push(newVal);
 			}
 		}
+	}
+	
+	function AddPlayerComment(timeStr,commentMsg){
+		var cMsg = commentMsg.split(',');
+		var date = new Date();
+		var t = timeStr.split(':');
+		date.setHours(parseInt(t[0]),parseInt(t[1]),parseInt(t[2]));
+		playerComments.push({time: date, type: cMsg[0], comment: cMsg[1]});
 	}
 }

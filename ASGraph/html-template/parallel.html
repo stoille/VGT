@@ -63,7 +63,7 @@ var w = 200*dims.length,
 	var rule = vis.add(pv.Rule)
 	    .data(dims)
 	    .left(x)
-	    .strokeStyle(color.by(pv.index))
+	    .strokeStyle(function() parent.colorArray[this.index])
 	    .lineWidth(2);
 
 	rule.anchor("top").add(pv.Label)
@@ -73,7 +73,7 @@ var w = 200*dims.length,
 	    .text(function(t) y[t].domain()[1]);
 
 	rule.anchor("bottom").add(pv.Label)
-	    .textStyle(function() color(this.index).darker())
+	    .textStyle(function() parent.colorArray[this.index])
 	    .textMargin(14);
 	
 	rule.anchor("bottom").add(pv.Label)
@@ -87,9 +87,27 @@ var w = 200*dims.length,
 	    .data(dims)
 	    .left(function(t, d) x(t))
 	    .bottom(function(t, d) y[t](d[t]))
+		.interpolate(function() "cardinal")
+		.segmented(function() false)
 	    .strokeStyle("rgba(0, 0, 0, .2)")
+		.tension(0.5)
 	    .lineWidth(1);
-
+	
+	/*scatterplot in between coordinates */
+	var sPanel = vis.add(pv.Panel)
+		.data(dims)
+		.left(x)
+		.width(w)
+		.height(h);
+	
+	sPanel.add(pv.Dot)
+		.data(data)
+		.def("x", function(k0, k1) pv.Scale.linear(data, function(d) d[k0]).range(0, w))
+	    .def("y", function(k0, k1) pv.Scale.linear(data, function(d) d[k1]).range(0, w))
+	    .left(function(d, k0, k1) this.x(data[sPanel.index]))
+	    .bottom(function(d, k0, k1) this.y()(data[sPanel.index]))
+		.strokeStyle(function() parent.colorArray[sPanel.index] );
+		
 	vis.render();
 
     </script></body>

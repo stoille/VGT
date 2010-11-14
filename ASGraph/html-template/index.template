@@ -124,42 +124,17 @@
 			<table align="left">
 				<tr> <!-- Game Object Graphs -->
 					<td>
-						<div id="center">
+						<center>
 						<div id="fig_objselect">
-							<script type="text/javascript">
 							
-								for(var pos = 0; pos < varData.length; ++pos){
-									varData[pos].pos = pos;
-									varData[pos].id = pos;
-									varData[pos].related = new Array();
-									varData[pos].expression = '<b><font color='+colorArray[0]+'>' + varData[pos].varName + ' = </font></b>';
-									//add related values randomly
-									var numRelated = Math.floor( Math.random() * 10 );
-									varData[pos].related.push(varData[pos].id)
-									for(var i = 1; i < numRelated; ++i){
-										var randVar = Math.floor( Math.random() * varData.length );
-										varData[pos].related.push(randVar);
-										varData[pos].expression += '<font color='+colorArray[i]+'>'+varData[randVar].varName + '</font> +';
-									}
-									if(numRelated <= 1)
-									{
-										varData[pos].expression += 'independant';
-									}
-									else {
-										varData[pos].expression = varData[pos].expression.substr(0,varData[pos].expression.length-1);
-									}
-								}
-							</script>
+							<input value="Select All" type=button onclick="SelectAll();" />
+							<input value="Clear" type=button onclick="ClearSelected();" />
 							<script type="text/javascript+protovis">
-
 							var w = 200,
 							h = 30,
 							numberFormat = pv.Format.number(),
 							dateFormat = pv.Format.date("%H:%M:%S"),
 							dayX = pv.Scale.linear(start, end).range(0, w*2);
-
-							/* Color by maximum number of people employed in that job. */
-							var c = pv.Scale.log(varData, function(d) pv.max(d.values) ).range("#ccc", "#1f77b4");
 
 							/* Tile the visualization for each job. */
 							var vis = new pv.Panel()
@@ -176,6 +151,7 @@
 							.def("i", -1)
 							.def("x", function(d) pv.Scale.linear(d.values, pv.index ).range(0, w))
 							.def("y", function(d) pv.Scale.linear(0, pv.max(d.values)).range(0, h))
+							.def("selected", -1)
 							.bottom(10)
 							.events("all")
 							.event("mousemove", pv.Behavior.point(Infinity).collapse("y"));
@@ -183,14 +159,17 @@
 							/* The area. */
 							panel.add(pv.Area)
 							.data(function(d) d.values )
-							.fillStyle(function(d, p) panel.i() < 0 ? colorArray[0] : "#2ca02c")
+							.fillStyle(function(d, p) panel.selected() > -1 ? colorArray[panel.selected()] : (p.varType == 'independant') ? "lightgray" : "gray" )
 							.left(function(d) panel.x()(this.index))
 							.height(function(d) panel.y()(d))
 							.bottom(0)
 							.event("point", function(d,p) panel.i(this.index) )
 							.event("unpoint", function() panel.i(-1))
 							.event("mousedown", pv.Behavior.select())
-							.event("mousedown", update);
+							.event("mousedown", update)
+							.anchor("top").add(pv.Line)
+							    .strokeStyle(function(d, p) panel.selected() > 0 ? "#3df06f" : "gray")
+							    .lineWidth(2);
 
 							/* The x-axis. */
 							panel.add(pv.Rule)
@@ -213,17 +192,19 @@
 							.right(function() panel.i() < 0 ? null : 0)
 							.textAlign(function() panel.i() < 0 ? "left" : "right")
 							.textStyle(function() panel.i() < 0 ? "#999" : "#000")
-							.text(function(d) panel.i() < 0 ? d.varName : dateFormat(new Date(start.getTime() + 2500*panel.i() )) + ": " + numberFormat(d.values[panel.i()]));
+							.text(function(d) panel.i() < 0 ? d.varName : dateFormat(new Date(start.getTime() + 1000*panel.i() )) + ": " + numberFormat(d.values[panel.i()]));
 
 							
 							vis.render();
 
 							function update(d,t){
-								SetSelectedGroup(t.index);
+								
+								panel.selected() > -1 ? panel.selected(-1) : panel.selected(numSelectedGroups);
+								UpdateSelectedGroups(t.index);
 							}
 							</script>
 						</div>
-						</div>
+						</center>
 					</td>
 				</tr>
 			</table>
@@ -231,128 +212,126 @@
 		<td> <!-- right pane -->
 			<table align="left">
 				<tr> <!-- Time Zoom -->
-						<div id="center">
-						<div id="fig_general">
-							<iframe id="zoom" width="764" height="265" src="zoom.html" frameborder="0"></iframe> 
-						</div>
-						</div>
-						</div>
-				
+					<div id="center">
+					<div id="fig_general">
+						
+					<iframe id="zoom" width="764" height="265" src="zoom.html" frameborder="0"></iframe> 
+					zoom
+					</div>
+					</div>
 				</tr>
 				<tr> <!-- Parallel Coordinates -->
-					
-						<div id="center">
-						<div id="fig_parallel">
-							<iframe id="parallel" width="764" height="320" src="parallel.html" frameborder="0"></iframe>
-						</div>
-						</div>
-				
+					<div id="center">
+					<div id="fig_parallel">
+						<iframe id="parallel" width="764" height="320" src="parallel.html" frameborder="0"></iframe> 
+					</div>
+					</div>
 				</tr>	
 				<tr> <!-- Sliders -->
-				
-						<div id="center">
-						<div id="fig_sliders">
-							<span id="slidersArea"></span>
-							 <!-- SWFObject's dynamic embed method replaces this alternative HTML content with Flash content when enough 
-									 JavaScript and Flash plug-in support is available. The div is initially hidden so that it doesn't show
-									 when JavaScript is disabled.
-								-->
-						        <div id="flashContent">
-						        	<p>
-							        	To view this page ensure that Adobe Flash Player version 
-										10.0.0 or greater is installed. 
-									</p>
-									<script type="text/javascript"> 
-										var pageHost = ((document.location.protocol == "https:") ? "https://" :	"http://"); 
-										document.write("<a href='http://www.adobe.com/go/getflashplayer'><img src='" 
-														+ pageHost + "www.adobe.com/images/shared/download_buttons/get_flash_player.gif' alt='Get Adobe Flash player' /></a>" ); 
-									</script> 
-						        </div>
+					<div id="center">
+					<div id="fig_sliders">
+						<span id="slidersArea"></span>
+					
+	
+					 <!-- SWFObject's dynamic embed method replaces this alternative HTML content with Flash content when enough 
+							 JavaScript and Flash plug-in support is available. The div is initially hidden so that it doesn't show
+							 when JavaScript is disabled.
+						-->
+				        <div id="flashContent">
+				        	<p>
+					        	To view this page ensure that Adobe Flash Player version 
+								10.0.0 or greater is installed. 
+							</p>
+							<script type="text/javascript"> 
+								var pageHost = ((document.location.protocol == "https:") ? "https://" :	"http://"); 
+								document.write("<a href='http://www.adobe.com/go/getflashplayer'><img src='" 
+												+ pageHost + "www.adobe.com/images/shared/download_buttons/get_flash_player.gif' alt='Get Adobe Flash player' /></a>" ); 
+							</script> 
+				        </div>
 
-						       	<noscript>
-						            <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="100%" height="100%" id="ASGraph">
-						                <param name="movie" value="ASGraph.swf" />
-						                <param name="quality" value="high" />
-						                <param name="bgcolor" value="#ffffff" />
-						                <param name="allowScriptAccess" value="sameDomain" />
-						                <param name="allowFullScreen" value="true" />
-						                <!--[if !IE]>-->
-						                <object type="application/x-shockwave-flash" data="ASGraph.swf" width="100%" height="100%">
-						                    <param name="quality" value="high" />
-						                    <param name="bgcolor" value="#ffffff" />
-						                    <param name="allowScriptAccess" value="sameDomain" />
-						                    <param name="allowFullScreen" value="true" />
-						                <!--<![endif]-->
-						                <!--[if gte IE 6]>-->
-						                	<p> 
-						                		Either scripts and active content are not permitted to run or Adobe Flash Player version
-						                		10.0.0 or greater is not installed.
-						                	</p>
-						                <!--<![endif]-->
-						                    <a href="http://www.adobe.com/go/getflashplayer">
-						                        <img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash Player" />
-						                    </a>
-						                <!--[if !IE]>-->
-						                </object>
-						                <!--<![endif]-->
-						            </object>
-							    </noscript>
-						</div>
-						</div>
-				
+				       	<noscript>
+				            <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="100%" height="100%" id="ASGraph">
+				                <param name="movie" value="ASGraph.swf" />
+				                <param name="quality" value="high" />
+				                <param name="bgcolor" value="#ffffff" />
+				                <param name="allowScriptAccess" value="sameDomain" />
+				                <param name="allowFullScreen" value="true" />
+				                <!--[if !IE]>-->
+				                <object type="application/x-shockwave-flash" data="ASGraph.swf" width="100%" height="100%">
+				                    <param name="quality" value="high" />
+				                    <param name="bgcolor" value="#ffffff" />
+				                    <param name="allowScriptAccess" value="sameDomain" />
+				                    <param name="allowFullScreen" value="true" />
+				                <!--<![endif]-->
+				                <!--[if gte IE 6]>-->
+				                	<p> 
+				                		Either scripts and active content are not permitted to run or Adobe Flash Player version
+				                		10.0.0 or greater is not installed.
+				                	</p>
+				                <!--<![endif]-->
+				                    <a href="http://www.adobe.com/go/getflashplayer">
+				                        <img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash Player" />
+				                    </a>
+				                <!--[if !IE]>-->
+				                </object>
+				                <!--<![endif]-->
+				            </object>
+					    </noscript>
+					</div>
+					</div>
 				</tr>
-
 			</table>
 		</td>
 	</tr>
 </table>
 
-
-</div>
-
 <script type="text/javascript">
-		function SetSelectedGroup(selected){
+		function UpdateSelectedGroups(selected){
+			//update the new selected group
 			selectedGroup = selected;
-			var f = document.getElementById('zoom');//.contentWindow['vis'];
-			f.src=f.src;
-			f = document.getElementById('parallel');//.contentWindow['vis'];
-			f.src=f.src;
-			//we want to make sliders for everything related, but not the composite types (unless they are not composite but independant)
-
+			//if the selected group has already been selected the deselect it
+			if(selectedGroups[selected] == undefined){
+				selectedGroups[selected] = varData[selected];
+				++numSelectedGroups;
+			}
+			else { delete selectedGroups[selected]; --numSelectedGroups; }
+			//refresh the zoom and parallel panels
+			UpdateZoomPanel();
+			UpdateParallelPanel();
+			//refresh sliders for everything related to a variable
 			var relatedSliders = '<form><table><tbody>';
 			var slideTxt = '';
-		
-			for(var ridx = 0; ridx < varData[selectedGroup].related.length; ++ridx){
-				var rid = varData[selectedGroup].related[ridx];
-				var dname = varData[rid].varName;
-			 	var dmin = pv.min(varData[rid].values);
-				var dmax = pv.max(varData[rid].values);
-				var dcurrentVal = varData[rid].values[varData[rid].values.length-1];
-				if(dmin == dmax){ dmin = 0; }
-				slideTxt += '<input type="range" name="'+dname+'" min="'+0+'" max="'+dmax+'" value="'+dcurrentVal+'" />'
-				relatedSliders += '<tr><td><font color="'+colorArray[ridx]+'">'+varData[rid].varName+'</font></td><td>'+slideTxt+'</td></tr>';
+			var col = 0;
+			for(var sg in selectedGroups){
+				for(var ridx = 0; ridx < selectedGroups[sg].related.length; ++ridx){
+					var rid = selectedGroups[sg].related[ridx];
+					var dname = varData[rid].varName;
+				 	var dmin = pv.min(varData[rid].values) * -5;
+					var dmax = pv.max(varData[rid].values) * 5;
+					var dcurrentVal = varData[rid].values[varData[rid].values.length-1];
+				
+					slideTxt = '<input type="range" name="'+dname+'" min="'+0+'" max="'+dmax+'" value="'+dcurrentVal+'" />'
+					relatedSliders += '<tr><td><font color="'+colorArray[col++]+'">'+varData[rid].varName+'</font></td><td>'+slideTxt+'</td></tr>';
+				}
 			}
 			relatedSliders += '<input value="Apply" type=button onclick="UpdateGame(this.form);" /></tbody></table></form>';
-		
 			document.getElementById("slidersArea").innerHTML =  relatedSliders;
 		}
 		function UpdateGraph(msg)
 		{
-		//	start = new Date(new Date() - (1000*60*maxTime));
-		//	end = new Date();
 			UpdateVarMap(msg);
 		}	
 		var intervalID = setInterval(
 			function() 
 			{
+				//update the time
+				end = new Date();
+				start = new Date(end - (1000*maxTime));
+				//update main page and object panels
 				vis.render();
-				var f = document.getElementById('zoom');//.contentWindow['vis'];
-			//	f.src=f.src;
-				f.contentWindow.RefreshData()
-				f = document.getElementById('parallel');//.contentWindow['vis'];
+				var f = document.getElementById('zoom');
 				f.src=f.src;
-			
-			//	f.contentWindow['vis'].render();
+			//	UpdateParallelPanel();
 			
 			}, 2500);
 		function getFlashMovie(movieName) {
@@ -368,6 +347,62 @@
 			}
 			
 			getFlashMovie("ASGraph").sendSomeData(gameUpdateMsg.substr(0,gameUpdateMsg.length-1));
+		}
+		function UpdateZoomPanel(){
+			delete related;
+			related = new Array();
+			//update zoom panel
+			for(var sg in parent.selectedGroups){
+				for(var rg in parent.varData[sg].related){
+					related.push(parent.varData[sg].related[rg]);
+					selectedNames += '\n'+parent.varData[related[related.length-1]].expression;
+				}
+			}
+			zoomData = 
+				pv.range(related.length)
+				.map(function(i) {
+					return pv.range(0,varData[related[i]].values.length,1)
+						.map(function(x) { 
+						    	return {x: new Date(start.getTime() + 1000 * x),
+						            	y: varData[related[i]].values[x] };		
+							} ); //end map
+				} );//end map
+			var f = document.getElementById('zoom');
+			f.src=f.src;
+		}
+		
+		function UpdateParallelPanel(){
+			//update parallel panel
+			f = document.getElementById('parallel');
+			f.src=f.src;
+		}
+		
+		function SaveGroup(groupName){
+			if(groupName != null)
+			{
+				//create and insert new group object
+				var vals = new Array();
+				for(var c = 0; c<maxTime;++c){
+					vals.push(1);
+				}
+				var go = {varName: groupName, 
+					expression: "", 
+					index: varData.length, 
+					values: vals, //just use a values filled with 1.0's
+					related: related.slice(0),
+					varType: 'composite'};
+				varMap[go.varName] = go.index;
+				varData.push( go );
+			
+				vis.render();
+			}
+		}
+		
+		function DeleteGroup(groupNum){
+			delete varMap[varData[groupNum].varName];
+			varData.splice(groupNum,groupNum);
+			vis.render();
+			selectedGroup = null;
 		}
 		</script>
    </body>

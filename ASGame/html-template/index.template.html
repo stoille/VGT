@@ -1,5 +1,5 @@
-<!-- saved from url=(0014)about:internet -->
 <html lang="en">
+<head>
 <script src="swfobject.js" type="text/javascript"></script>
 		<script src="unityobject.js" type="text/javascript"></script>
 		
@@ -44,13 +44,10 @@
 			}
 			
 			function ShowConnectionStatus(status){
-					document.getElementById("statusInfoArea").innerHTML =  status +
-						'<input value="Send Comment" type=button onclick="SendComment(this.selectedNames);" /><input value="Send Bug" type=button onclick="SendBug(this.selectedNames);" />'
+					document.getElementById("statusInfoArea").innerHTML =  status;
 			}
 		
 		--></script>
-
-<head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 <!--  BEGIN Browser History required section -->
@@ -75,7 +72,7 @@ body { margin: 0px; overflow:hidden }
 <center>
 
 		<div style="float:top;">
-			<div id="header">Visual Game Tuning Example</a>
+			<div id="header">Visual Game Tuning Example</div>
 		</div>
 		
 		<div style="float:center;">
@@ -105,11 +102,38 @@ body { margin: 0px; overflow:hidden }
 					<span id="statusInfoArea"></span>
 				</td>
 				</tr>
+				<tr>
+				<td>
+						<form name="commentTypeForm" >
+						<textarea name="commentArea" rows="5" cols="60"></textarea><br>
+							Comment type:
+						<input type="radio" name="comment" value="!general" checked> General
+						<input type="radio" name="comment" value="!bug"> Bug
+						<input type="radio" name="comment" value="!voice"> Voice
+						<input type="radio" name="comment" value="!screen"> Screen<br>
+						</form>
+						<input type="button" value="Submit" onclick="SendComment()"/>
+				
+				</td>
+				</tr>
 			</div>
 		</div>
 		
-		
-
+		<script type="text/javascript">
+			function SendComment(){
+				var commentType = '';
+				for(var i = 0; i < document.commentTypeForm.comment.length; ++i){
+					if(document.commentTypeForm.comment[i].checked){
+						commentType = document.commentTypeForm.comment[i].value;
+						break;
+					}
+				}
+				var date = new Date();
+				var dateString = date.getHours()+':'+date.getMinutes()+':'+date.getSeconds()+'@';
+				//for now all comments will act as general comments except their type, denoted by '!typeNum' will be appended. style of msg is "!0,comments"
+				getFlashMovie(flashMovieName).updateGraph(dateString+commentType+',' + document.commentTypeForm.commentArea.value);
+			}
+		</script>
 </center>
 </body>
 </html>

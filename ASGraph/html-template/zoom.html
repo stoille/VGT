@@ -6,9 +6,12 @@
   </head>
   <body>
     <div style="text-align:left;font-size:small;height: 35px;overflow-y:scroll;border: 1px lightgray solid;">
+	<script tpe="text/javascript">
+	
+	</script>
 	  	<script type="text/javascript">
 	
-			var selectedNames = '<input value="Save" type=button onclick="parent.SaveGroup(this.selectedNames);" /><input value="Delete" type=button onclick="parent.DeleteGroup(this.selectedNames);" />';
+			var selectedNames = '<input value="Save" type=button onclick=\' g=prompt("Enter new group name","new_group"); parent.SaveGroup(g); \' />';
 			var end = new Date();
 			var start = new Date(end - (1000*parent.maxTime));
 
@@ -24,7 +27,6 @@
 			var scale = true;
 		</script>
 		
-     <!-- <input checked id="scale" type="checkbox" onchange="vis.render()" visible="false"><label for="scale">Scale to fit</label>-->
 	</div>
 
     <script type="text/javascript+protovis">
@@ -165,6 +167,29 @@ context.add(pv.Panel)
     .cursor("move")
     .event("mousedown", pv.Behavior.drag())
     .event("drag", focus);
+
+context.add(pv.Rule)
+    .data(x.ticks())
+    .left(x)
+    .strokeStyle("grey");
+
+context.add(pv.Image)
+	.width(20)
+	.height(20)
+    .data(parent.playerComments)
+	.url(function(d) { 
+		if(d.type == '!general')
+			return "http://www.educationworld.com/a_tech/gadget/images/gadget_011.png";
+		else if(d.type == '!bug') 
+			return "http://www.90minds.com/wp-content/uploads/2010/09/software-bug.jpg";
+		
+		else if(d.type == '!voice')
+			return "http://bilumi.org/blog/wp-content/uploads/20050406054640!Sound-icon.png";
+		else if(d.type == '!screen')
+			return "http://www.cashcade.co.uk/wp-content/uploads/2009/04/google-tv-ads.png";
+	})
+	.title(function(d) d.comment)
+    .left( function(d) x(d.time) )
 	
 vis.render();
 
