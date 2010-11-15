@@ -198,8 +198,7 @@
 							vis.render();
 
 							function update(d,t){
-								
-								panel.selected() > -1 ? panel.selected(-1) : panel.selected(numSelectedGroups);
+								panel.selected() > -1 ? panel.selected(-1) : panel.selected(selectedGroupsArray.length);
 								UpdateSelectedGroups(t.index);
 							}
 							</script>
@@ -286,15 +285,22 @@
 </table>
 
 <script type="text/javascript">
-		function UpdateSelectedGroups(selected){
+		function UpdateSelectedGroups(selectedIdx){
 			//update the new selected group
-			selectedGroup = selected;
+			selectedGroupIdx = selectedIdx;
 			//if the selected group has already been selected the deselect it
-			if(selectedGroups[selected] == undefined){
-				selectedGroups[selected] = varData[selected];
-				++numSelectedGroups;
+			if(selectedGroups[selectedGroupIdx] == undefined){
+				selectedGroups[selectedGroupIdx] = selectedGroupsArray.length;
+				selectedGroupsArray.push(varData[selectedGroupIdx]);
 			}
-			else { delete selectedGroups[selected]; --numSelectedGroups; }
+			else {  //deselect deletes it from selected groups
+				selectedGroupsArray.splice(selectedGroups[selectedGroupIdx],1); 
+				delete selectedGroups[selectedGroupIdx];
+				//we reduce all the mapped values after the index by 1
+				for(var sg in selectedGroups){
+						selectedGroups[sg] = selectedGroups[sg] - 1;
+				}
+			}
 			//refresh the zoom and parallel panels
 			UpdateZoomPanel();
 			UpdateParallelPanel();
@@ -302,16 +308,16 @@
 			var relatedSliders = '<form><table><tbody>';
 			var slideTxt = '';
 			var col = 0;
-			for(var sg in selectedGroups){
-				for(var ridx = 0; ridx < selectedGroups[sg].related.length; ++ridx){
-					var rid = selectedGroups[sg].related[ridx];
-					var dname = varData[rid].varName;
-				 	var dmin = pv.min(varData[rid].values) * -5;
-					var dmax = pv.max(varData[rid].values) * 5;
-					var dcurrentVal = varData[rid].values[varData[rid].values.length-1];
+			for(var sg in selectedGroupsArray){
+				var selectedGroup = selectedGroupsArray[sg]
+				for(var ridx = 0; ridx < selectedGroup.related.length; ++ridx){
+					var dname = selectedGroup.varName;
+				 	var dmin = (pv.min(selectedGroup.values) + 0.001) * -2;
+					var dmax = (pv.max(selectedGroup.values) + 0.001) * 2;
+					var dcurrentVal = selectedGroup.values[selectedGroup.values.length-1];
 				
 					slideTxt = '<input type="range" name="'+dname+'" min="'+0+'" max="'+dmax+'" value="'+dcurrentVal+'" />'
-					relatedSliders += '<tr><td><font color="'+colorArray[col++]+'">'+varData[rid].varName+'</font></td><td>'+slideTxt+'</td></tr>';
+					relatedSliders += '<tr><td><font color="'+colorArray[col++]+'">'+selectedGroup.varName+'</font></td><td>'+slideTxt+'</td></tr>';
 				}
 			}
 			relatedSliders += '<input value="Apply" type=button onclick="UpdateGame(this.form);" /></tbody></table></form>';
@@ -352,10 +358,11 @@
 			delete related;
 			related = new Array();
 			//update zoom panel
-			for(var sg in parent.selectedGroups){
-				for(var rg in parent.varData[sg].related){
-					related.push(parent.varData[sg].related[rg]);
-					selectedNames += '\n'+parent.varData[related[related.length-1]].expression;
+			for(var sg in selectedGroupsArray){
+				var selectedGroup = selectedGroupsArray[sg];
+				for(var rg in selectedGroup.related){
+					related.push(selectedGroup.related[rg]);
+					selectedNames += '\n'+selectedGroup.expression;
 				}
 			}
 			zoomData = 

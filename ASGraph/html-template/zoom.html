@@ -17,10 +17,11 @@
 
 			var related = new Array();
 			var ci = 0;
-			for(var sg in parent.selectedGroups){
-				for(var rg in parent.varData[sg].related){
-					related.push(parent.varData[sg].related[rg]);
-					selectedNames += '<font color="'+parent.colorArray[ci++]+'">'+parent.varData[related[related.length-1]].varName+'</font> | ';//expression;
+			for(var sg in parent.selectedGroupsArray){
+				var selectedGroup = parent.selectedGroupsArray[sg];
+				for(var rg in selectedGroup.related){
+					related.push(selectedGroup.related[rg]);
+					selectedNames += '<font color="'+parent.colorArray[ci++]+'">'+selectedGroup.varName+'</font> | ';//expression;
 				}
 			}
 			document.write(selectedNames.substr(0,selectedNames.length-2));
@@ -36,7 +37,7 @@
 		.map(function(i) {
 			return pv.range(0,parent.varData[related[i]].values.length,1)
 				.map(function(x) { 
-				    	return {x: new Date(start.getTime() + 1000 * x),
+				    	return {x: new Date(end.getTime() - 1000 * x),
 				            	y: parent.varData[related[i]].values[x] };		
 					} ); //end map
 		} );//end map
@@ -74,7 +75,11 @@ var vis = new pv.Panel()
 	/* An invisible bar to capture events (without flickering). */
 	vis.add(pv.Panel)
 	    .events("all")
-	    .event("mousemove", function() { parent.zoomIdxDate = Math.floor(x.invert(vis.mouse().x));  parent.zoomIdx = Math.floor(x(parent.zoomIdxDate)); parent.UpdateParallelPanel(); vis.render(); });
+	    .event("mousemove", function() { 
+		parent.zoomIdxDate = Math.floor(x.invert(vis.mouse().x));   
+		vis.render(); 
+		parent.UpdateParallelPanel(); 
+	});
 	
 	
 	/* A panel for each zoomData series. */

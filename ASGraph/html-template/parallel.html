@@ -1,6 +1,7 @@
 <html>
   <head>
     <script type="text/javascript" src="protovis-r3.2.js"></script>
+	<script type="text/javascript" src="Metrics.js"></script>
     <style type="text/css">
 
 
@@ -20,11 +21,12 @@ large {
   </head>
   <body>
     <script type="text/javascript+protovis">
-
+	
 	var dimIds = new Array();
-	for(var sg in parent.selectedGroups){
-		for(var rg in parent.varData[sg].related){
-			dimIds.push(parent.varData[sg].related[rg]);
+	for(var sg in parent.selectedGroupsArray){
+		var selectedGroup = parent.selectedGroupsArray[sg];
+		for(var rg in selectedGroup.related){
+			dimIds.push(selectedGroup.related[rg]);
 		}
 	}
 	
@@ -35,8 +37,8 @@ for(var i = 0; i < dimIds.length; ++i){
 	var o = new Object();
 	for(var j = 0; j < dimIds.length; ++j){
 		if(dims[j] == parent.varData[dimIds[i]].varName){
-			o[dims[i]] = parent.varData[dimIds[i]].values[parent.zoomIdx];
-			if(o[dims[i]] == null){ o[dims[i]] = 0; }
+			o[dims[j]] = parent.varData[dimIds[i]].values[parent.zoomIdx];
+			if(o[dims[j]] == null){ o[dims[i]] = 0; }
 		}
 		else { o[dims[j]] = 0; }
 	}
@@ -45,7 +47,7 @@ for(var i = 0; i < dimIds.length; ++i){
 
 /* Sizing and scales. */
 var w = 200*dims.length,
-    h = 200,
+    h = 225,
     color = pv.Colors.category10(),
    	x = pv.Scale.ordinal(dims).splitFlush(0, w),
 	y = pv.dict(dims, function(t) pv.Scale.linear()
@@ -76,9 +78,10 @@ var w = 200*dims.length,
 	    .textStyle(function() parent.colorArray[this.index])
 	    .textMargin(14);
 	
-	rule.anchor("bottom").add(pv.Label)
-		.top(h+23)
-	    .text(function(t) "I = 1.0, CC | GC");
+	rule.anchor("top").add(pv.Label)
+		.top(-10)
+		.left(function(t) x(t) + (x(dims[1])- x(dims[0]))/2 )
+	    .text(function(t) (this.index < parent.selectedGroupsArray.length-1) ? "P = "+FindCorrelation(parent.selectedGroupsArray[this.index].values,parent.selectedGroupsArray[this.index+1].values) : "");
 
 	/* Parallel coordinates. */
 	vis.add(pv.Panel)
@@ -102,10 +105,10 @@ var w = 200*dims.length,
 	
 	sPanel.add(pv.Dot)
 		.data(data)
-		.def("x", function(k0, k1) pv.Scale.linear(data, function(d) d[k0]).range(0, w))
-	    .def("y", function(k0, k1) pv.Scale.linear(data, function(d) d[k1]).range(0, w))
-	    .left(function(d, k0, k1) this.x(data[sPanel.index]))
-	    .bottom(function(d, k0, k1) this.y()(data[sPanel.index]))
+		.def("y", function(t) pv.Scale.linear(data, function(d) d[dims[sPanel.index]]).range(0,200) ) 
+		.def("x", function(t) pv.Scale.linear(data, function(d) d[dims[sPanel.index+1]]).range(0,200) ) 
+		.left(function(t) this.x(sPanel.index))
+		.bottom(function(t) this.y()(sPanel.index+1))
 		.strokeStyle(function() parent.colorArray[sPanel.index] );
 		
 	vis.render();

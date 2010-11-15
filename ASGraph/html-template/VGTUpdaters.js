@@ -9,8 +9,8 @@ var maxTime = 300;
 //the index for the focus range
 var fi = {x:200, dx:100};
 var selectedGroups = new Object();
-var numSelectedGroups = 0;
-var selectedGroup = null;
+var selectedGroupsArray = new Array();
+var selectedGroupIdx = null;
 
 var colorArray = [ 	"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
 "steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",

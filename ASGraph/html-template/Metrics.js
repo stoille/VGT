@@ -10,5 +10,5 @@ function FindCorrelation(x,y)
 		sum_yy += y[i]*y[i];
 	}
 	var n = x.length;
-	return ( n * sum_xy - sum_x*sum_y/Math.sqrt((n*sum_xx-sum_xx)*(n*sum_yy-sym_yy)) );
+	return ( (n * sum_xy - sum_x * sum_y)/Math.sqrt((n*sum_xx-(sum_x*sum_x))*(n*sum_yy-(sum_y*sum_y))) );
 }
