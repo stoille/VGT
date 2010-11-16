@@ -58,7 +58,7 @@ function UpdateVarMap(msg) {
 			break;
 		}
 		var params = goMsg.split("|");
-		var go, varName, newVal, expression;
+		var go, varName, newVal, expression, objName;
 		//if there are a list of variables, this msg describes a gameMsg update
 		if(params[0].split(",").length == 1){
 			var varStr = params[1];
@@ -66,13 +66,14 @@ function UpdateVarMap(msg) {
 			var goPathPairs = varStr.split("$");
 			for (var j = 0; j < goPathPairs.length; ++j) {
 				var gopp = goPathPairs[j].split(",");
-				varName = params[0] + ":" + gopp[0];
+				objName = params[0];
+				varName = gopp[0];
 				newVal = gopp[1]; 
 				if(typeof newVal != "undefined"){
 					//setup this var if it doesnt exist yet
 					if (varMap[varName] == undefined) {
 						expression = '<b><font color='+colorArray[0]+'>'+varName+' = </font></b><font color='+colorArray[1]+'>'+varName+'</font>';
-						go = {varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array(), varType: 'independant' };
+						go = {objName: objName, varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array(), varType: 'independant' };
 						varMap[varName] = go.index;
 						go.related.push(go.index);
 						varData.push( go );
@@ -86,7 +87,13 @@ function UpdateVarMap(msg) {
 		}
 		else {
 			var gopp = params[0].split(",");
-			varName = gopp[0];
+			var g = gopp[0].split(":");
+			objName = g[0];
+			for(var k = 1; k < gopp[0].length; ++k){
+				varName += g[k] + ":";
+			}
+			varName = varName.substr(0,varName.length-2);
+			
 			newVal = gopp[1];
 			if(typeof newVal != "undefined"){
 				var exprStr = params[1];

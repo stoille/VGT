@@ -21,7 +21,7 @@
 				var selectedGroup = parent.selectedGroupsArray[sg];
 				for(var rg in selectedGroup.related){
 					related.push(selectedGroup.related[rg]);
-					selectedNames += '<font color="'+parent.colorArray[ci++]+'">'+selectedGroup.varName+'</font> | ';//expression;
+					selectedNames += '<font color="'+parent.colorArray[ci++]+'">'+selectedGroup.objName+":"+selectedGroup.varName+'</font> | ';//expression;
 				}
 			}
 			document.write(selectedNames.substr(0,selectedNames.length-2));
@@ -63,13 +63,13 @@ var vis = new pv.Panel()
     .top(5);
 
 	/* Current index line. */
-	vis.add(pv.Rule)
+	var indexRule = vis.add(pv.Rule)
 	    .visible(function() parent.zoomIdxDate >= 0 )
 	    .left(function() x(parent.zoomIdxDate))
 	    .top(-4)
-	    .bottom(-10)
+	    .bottom(-8)
 	    .strokeStyle("red")
-	  .anchor("bottom").add(pv.Label)
+	  	.anchor("bottom").add(pv.Label)
 	    .text(function() { var dt = new Date(parent.zoomIdxDate); return dt.toLocaleTimeString();} );
 
 	/* An invisible bar to capture events (without flickering). */
@@ -192,6 +192,8 @@ context.add(pv.Image)
 			return "http://bilumi.org/blog/wp-content/uploads/20050406054640!Sound-icon.png";
 		else if(d.type == '!screen')
 			return "http://www.cashcade.co.uk/wp-content/uploads/2009/04/google-tv-ads.png";
+		else if(d.type == '!corr')
+			return "http://upload.wikimedia.org/wikipedia/commons/3/33/White_square_with_question_mark.png";
 	})
 	.title(function(d) d.comment)
     .left( function(d) x(d.time) )

@@ -22,37 +22,41 @@ large {
   <body>
     <script type="text/javascript+protovis">
 	
-	var dimIds = new Array();
+	var dimIdxs = new Array();
 	for(var sg in parent.selectedGroupsArray){
 		var selectedGroup = parent.selectedGroupsArray[sg];
 		for(var rg in selectedGroup.related){
-			dimIds.push(selectedGroup.related[rg]);
+			dimIdxs.push(selectedGroup.related[rg]);
 		}
 	}
 	
-var dims = pv.range(dimIds.length).map(function(i) { return parent.varData[dimIds[i]].varName; });
+var dims = pv.range(dimIdxs.length).map(function(i) { return parent.varData[dimIdxs[i]].varName; });
 
+//each object should have one strand spanning across the entire graph
+// otherwise we must mimick the value as 0
 var data = new Array();
-for(var i = 0; i < dimIds.length; ++i){
-	var o = new Object();
-	for(var j = 0; j < dimIds.length; ++j){
-		if(dims[j] == parent.varData[dimIds[i]].varName){
-			o[dims[j]] = parent.varData[dimIds[i]].values[parent.zoomIdx];
-			if(o[dims[j]] == null){ o[dims[i]] = 0; }
+for(var i = 0; i < dims.length; ++i){
+	var dim = dims[i];
+	for(var j = 0; j < parent.varData.length; ++j){
+		var go = parent.varData[j];
+		if(dim == go.varName){
+			var o = new Object();
+			for(var d in dims)
+				o[dims[d]] = 0;
+			o[dim] = go.values[parent.zoomIdx];
+			data.push(o);
 		}
-		else { o[dims[j]] = 0; }
 	}
-	data.push(o);
 }
 
 /* Sizing and scales. */
 var w = 200*dims.length,
     h = 225,
-    color = pv.Colors.category10(),
    	x = pv.Scale.ordinal(dims).splitFlush(0, w),
-	y = pv.dict(dims, function(t) pv.Scale.linear()
-	        .domain(data.filter(function(d) !isNaN(d[t])), function(d) d[t])
-	        .range(0, h));
+	y = pv.dict(dims, 
+			function(t) pv.Scale.linear()
+					    .domain(data, function(d) d[t])
+				        .range(0, h) );
 
 	/* The root panel. */
 	var vis = new pv.Panel()
@@ -69,32 +73,50 @@ var w = 200*dims.length,
 	    .lineWidth(2);
 
 	rule.anchor("top").add(pv.Label)
-	    .text(function(t) y[t].domain()[0]);
-
-	rule.anchor("bottom").add(pv.Label)
 	    .text(function(t) y[t].domain()[1]);
 
 	rule.anchor("bottom").add(pv.Label)
+	    .text(function(t) y[t].domain()[0]);
+
+	rule.anchor("bottom").add(pv.Label)
 	    .textStyle(function() parent.colorArray[this.index])
+		.text(function() parent.varData[dimIdxs[this.index]].objName+":"+parent.varData[dimIdxs[this.index]].varName)
 	    .textMargin(14);
 	
 	rule.anchor("top").add(pv.Label)
 		.top(-10)
 		.left(function(t) x(t) + (x(dims[1])- x(dims[0]))/2 )
-	    .text(function(t) (this.index < parent.selectedGroupsArray.length-1) ? "P = "+FindCorrelation(parent.selectedGroupsArray[this.index].values,parent.selectedGroupsArray[this.index+1].values) : "");
+	    .text(function(t) {
+			if(this.index < dims.length-1){
+				var corr = FindCorrelation(parent.varData[dimIdxs[this.index]].values,parent.varData[dimIdxs[this.index+1]].values);
+				if(corr < -1.0) corr = -1.0; else if(corr > 1.0) corr = 1.0;
+				//if there may be a correlation between variables, alert the user
+				if(corr != NaN && corr < 0.05 && corr > -0.05)
+				{
+					var cMsg = "Potential relationship between: \n1) "+dims[this.index]+"\n2) "+dims[this.index+1]+"\nP = "+corr;
+					parent.playerComments.push({time: new Date(), type: '!corr', comment: cMsg});
+				}
+			 	return "P = "+corr; 
+			}
+			else return "";
+	})
 
 	/* Parallel coordinates. */
-	vis.add(pv.Panel)
+	var parallelPanel = vis.add(pv.Panel)
 	    .data(data)
+		.def("lastT", null)
+		.def("lastD", null)
 	  .add(pv.Line)
 	    .data(dims)
 	    .left(function(t, d) x(t))
 	    .bottom(function(t, d) y[t](d[t]))
-		.interpolate(function() "cardinal")
+//		.interpolate(function() "cardinal")
 		.segmented(function() false)
 	    .strokeStyle("rgba(0, 0, 0, .2)")
-		.tension(0.5)
-	    .lineWidth(1);
+	//	.tension(0.5)
+	    .lineWidth(function(t,d){
+			return 1;
+		});
 	
 	/*scatterplot in between coordinates */
 	var sPanel = vis.add(pv.Panel)
