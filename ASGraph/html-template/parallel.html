@@ -86,7 +86,7 @@ for(var i = 0; i < dimArry.length-1; ++i){
 /* Sizing and scales. */
 var w = 200*dims.length,
     h = 225,
-   	x = pv.Scale.ordinal(dims).splitFlush(0, w),
+   	x = pv.Scale.ordinal(dims).splitFlush(50, w-50),
 	y = pv.dict(dims, 
 			function(t) pv.Scale.linear()
 					    .domain(data, function(d) d[t])
@@ -155,16 +155,16 @@ var w = 200*dims.length,
 	/*scatterplot in between coordinates */
 	var sPanel = vis.add(pv.Panel)
 		.data(data)
-		.left(x)
 		.width(lw)
-		.height(h);
+		.height(h)
+		.def("c",0);
 		
 		sPanel.add(pv.Dot)
-		.data(dims)
-		.visible(function() (dims.length > 1) ? true : false )
-		.left(function(t,d) x(this.index) + (lw * Math.random()) )
-		.bottom(function(t,d) h * Math.random() )
-		.strokeStyle(function() parent.colorArray[this.index] );
+		.data(dimArry)
+		.visible(function() (dimArry.length > 1 && this.index < dimArry.length-1 ) ? true : false )
+		.left(function(t,d) x(t) + ((lw*0.75)*( dimArry[this.index][sPanel.c()] / pv.max(dimArry[this.index]) )) )
+		.bottom(function(t,d) ((h*0.75)*( dimArry[this.index+1][sPanel.c()] / pv.max(dimArry[this.index+1]) )) )
+		.strokeStyle(function() { sPanel.c(sPanel.c()+1); return parent.colorArray[this.index]; } );
 		
 	vis.render();
 

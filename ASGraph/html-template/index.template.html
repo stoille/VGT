@@ -290,12 +290,18 @@
 			selectedGroupIdx = selectedIdx;
 			//if the selected group has already been selected the deselect it
 			if(selectedGroups[selectedGroupIdx] == undefined){
-				selectedGroups[selectedGroupIdx] = selectedGroupsArray.length;
-				selectedGroupsArray.push(varData[selectedGroupIdx]);
+				for(var r in varData[selectedGroupIdx].related){
+					var relatedGo = varData[varData[selectedGroupIdx].related[r]];
+					selectedGroups[selectedGroupIdx] = selectedGroupsArray.length;
+					selectedGroupsArray.push(relatedGo);
+				}
 			}
 			else {  //deselect deletes it from selected groups
-				selectedGroupsArray.splice(selectedGroups[selectedGroupIdx],1); 
-				delete selectedGroups[selectedGroupIdx];
+				for(var r in varData[selectedGroupIdx].related){
+					var relatedGoIdx = varData[selectedGroupIdx].related[r];
+					selectedGroupsArray.splice(selectedGroups[selectedGroupIdx],1); 
+					delete selectedGroups[selectedGroupIdx];
+				}
 				//we reduce all the mapped values after the index by 1
 				for(var sg in selectedGroups){
 						selectedGroups[sg] = selectedGroups[sg] - 1;
@@ -398,9 +404,9 @@
 					expression: "", 
 					index: varData.length, 
 					values: vals, //just use a values filled with 1.0's
-					related: related.slice(0),
+					related: related,
 					varType: 'composite'};
-				varMap[go.objName+":"+groupName] = go.index;
+				varMap[go.objName+":"+go.varName] = go.index;
 				varData.push( go );
 			
 				vis.render();

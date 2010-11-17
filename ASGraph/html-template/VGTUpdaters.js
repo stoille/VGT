@@ -54,11 +54,11 @@ function FindUrlParameters()
 	var rb = urlDecode("realBias");
 	var fb = urlDecode("fakeBias");
 	if(fn != "") 
-		fakedNum = fn;
+		fakedNum = parseInt(fn);
 	if(rb != "")
-		realBias = rb;
+		realBias = parseFloat(rb);
 	if(fb != "")
-		fakeBias = fb;
+		fakeBias = parseFloat(fb);
 }
 
 /*
