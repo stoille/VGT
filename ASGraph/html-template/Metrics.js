@@ -1,6 +1,7 @@
 //finds the correlation coefficient between two sets
 function FindCorrelation(x,y)
 {
+		alert("x length: "+x.length+"y length: "+y.length);
 	var sum_x = 0, sum_y = 0, sum_xy = 0, sum_xx = 0, sum_yy = 0;
 	for(var i = 0; i < x.length; ++i){
 		sum_x += x[i];
@@ -10,5 +11,6 @@ function FindCorrelation(x,y)
 		sum_yy += y[i]*y[i];
 	}
 	var n = x.length;
+
 	return ( (n * sum_xy - sum_x * sum_y)/Math.sqrt((n*sum_xx-(sum_x*sum_x))*(n*sum_yy-(sum_y*sum_y))) );
 }

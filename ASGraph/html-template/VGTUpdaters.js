@@ -1,5 +1,6 @@
 //keeps track of the variables found in var data
 var varMap = new Object();
+var objMap = new Object();
 var varData = new Array();
 
 //last maxTime posted timings
@@ -7,12 +8,13 @@ var timeArray = new Array();
 var maxTime = 300;
 
 //the index for the focus range
-var fi = {x:200, dx:100};
+var fi = {x:0, dx:705};
 var selectedGroups = new Object();
 var selectedGroupsArray = new Array();
 var selectedGroupIdx = null;
 
-var colorArray = [ 	"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
+var colorArray = [ 	
+"steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
 "steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
 "steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
 "steelBlue", "#0000FF", "#FF00FF", "#808080",	"#008000", "#00FF00", "#800000","#000080", "#808000", "#800080", "#FF0000",	"#C0C0C0", "#008080",
@@ -29,6 +31,35 @@ var zoomIdx = 0;
 
 //player comment stuff
 var playerComments = new Array();
+
+var fakedNum = 0;
+var realBias = 0.7;
+var fakeBias = 0.3;
+
+function urlDecode( name )
+{
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return "";
+  else
+    return results[1];
+}
+
+function FindUrlParameters()
+{
+	var fn = urlDecode("fakedNum");
+	var rb = urlDecode("realBias");
+	var fb = urlDecode("fakeBias");
+	if(fn != "") 
+		fakedNum = fn;
+	if(rb != "")
+		realBias = rb;
+	if(fb != "")
+		fakeBias = fb;
+}
 
 /*
 var sampleExpr = '<b><font color='+colorArray[0]+'>My:own:sample = </font></b><font color='+colorArray[1]+'>My:own:sample</font>';
@@ -58,7 +89,7 @@ function UpdateVarMap(msg) {
 			break;
 		}
 		var params = goMsg.split("|");
-		var go, varName, newVal, expression, objName;
+		var go, go2, varName, newVal, expression, objName;
 		//if there are a list of variables, this msg describes a gameMsg update
 		if(params[0].split(",").length == 1){
 			var varStr = params[1];
@@ -74,14 +105,41 @@ function UpdateVarMap(msg) {
 					if (varMap[varName] == undefined) {
 						expression = '<b><font color='+colorArray[0]+'>'+varName+' = </font></b><font color='+colorArray[1]+'>'+varName+'</font>';
 						go = {objName: objName, varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array(), varType: 'independant' };
-						varMap[varName] = go.index;
+						varMap[go.varName] = go.index;
 						go.related.push(go.index);
 						varData.push( go );
-					} else { go = varData[varMap[varName]]; }
+						if(objMap[go.objName] == undefined)
+							objMap[go.objName] = new Object();
+						objMap[go.objName][go.varName] = varData[go.index];
+						//insert random values to test
+						if(fakedNum > 1)
+						for(var i = 1; i <= fakedNum; ++i){
+							go2 = {objName: objName+i, varName: varName, expression: expression, index: varData.length, values: new Array(), related: new Array(), varType: 'independant' };
+							go2.related.push(go2.index); //rand val
+							varData.push(go2);
+							if(objMap[go2.objName] == undefined)
+								objMap[go2.objName] = new Object();
+							objMap[go2.objName][go2.varName] = varData[go2.index];
+						}
+					} else { 
+						go = varData[varMap[varName]]; 
+					}
 					//update the value
-					if(go.values.length > maxTime)
+					if(go.values.length > maxTime){
 						go.values.shift();
+						if(fakedNum > 1)
+						for(var i = 1; i <= fakedNum; ++i)
+						{
+							go2 = varData[varMap[varName]+i];
+							go2.values.shift();
+						}
+					}
 					go.values.push(newVal);
+					if(fakedNum > 1)
+					for(var i = 1; i <= fakedNum; ++i){
+						go2 = varData[varMap[varName]+i];
+						go2.values.push(newVal * (realBias + (fakeBias*Math.random())) + (0.05 * newVal));
+					}
 				}
 			}
 		}

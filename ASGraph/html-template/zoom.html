@@ -168,7 +168,7 @@ context.add(pv.Panel)
   .add(pv.Bar)
     .left(function(d) d.x)
     .width(function(d) d.dx)
-    .fillStyle("rgba(255, 128, 128, .4)")
+    .fillStyle("rgba(255, 128, 128, .2)")
     .cursor("move")
     .event("mousedown", pv.Behavior.drag())
     .event("drag", focus);
@@ -184,16 +184,16 @@ context.add(pv.Image)
     .data(parent.playerComments)
 	.url(function(d) { 
 		if(d.type == '!general')
-			return "http://www.educationworld.com/a_tech/gadget/images/gadget_011.png";
+			return "images/comment.png";
 		else if(d.type == '!bug') 
-			return "http://www.90minds.com/wp-content/uploads/2010/09/software-bug.jpg";
+			return "images/bug.png";
 		
 		else if(d.type == '!voice')
-			return "http://bilumi.org/blog/wp-content/uploads/20050406054640!Sound-icon.png";
+			return "images/voice.png";
 		else if(d.type == '!screen')
-			return "http://www.cashcade.co.uk/wp-content/uploads/2009/04/google-tv-ads.png";
+			return "images/screen.png";
 		else if(d.type == '!corr')
-			return "http://upload.wikimedia.org/wikipedia/commons/3/33/White_square_with_question_mark.png";
+			return "images/indicator.png";
 	})
 	.title(function(d) d.comment)
     .left( function(d) x(d.time) )
